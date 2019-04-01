@@ -2,7 +2,7 @@
 title: "Practical Machine Learning - Week 4"
 author: "Jessica Ginesta"
 date: "March 31, 2019"
-output: rmarkdown::github_document
+output: html_document
 
 ---
 
@@ -11,9 +11,15 @@ Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible t
 
 The goal of this project is to predict the manner in which the participants did the exercise.
 
+From our results, we can say that the wight lifting exercises are being performed correctly.
+
 ## Data Processing
 
-Let's start by downloading and extracting only the fields we will use for this analysis.
+Let's start by downloading and extracting only the fields we will use for this analysis. We have followed a couple of steps to make our data cleaner.
+-        We will remove poor predictors from our data by identifying which ones have zero variance.
+-       We will remove the variables that have NA's.
+-       We will remove the variables that are identifiers and timestamps and are not sensor measurements.
+
 ```{r global_options, include=FALSE,message=FALSE}
 library(dplyr)
 library(lubridate)
@@ -57,19 +63,20 @@ Initially loading the data, the testing dataset had 20 observations with 160 var
 We also removed the first 7 columns as it is personal data and would interfere in the predictions.
 
 After creatinga partition with the test and training set we have:
-1. New Training Set: 13737 observations with 53 variables.
-2. New Testing Set: 5885 observations with 53 variables.
+-       New Training Set: 13737 observations with 53 variables.
+-       New Testing Set: 5885 observations with 53 variables.
 
 ### Analyzing Data
 We will run our test and train data through a couple of models to obtain the best accuracy.
-The number of folds is 5, as 10 is more resource intesive and doesn't not improve accuracy that much.
+Cross validation is being used with k-folds=5, as 10 is more resource intesive and doesn't not improve accuracy that much.
+We will start by setting the seed to allow a reproducible research.
 
-```{r echo=TRUE,message=FALSE,results='hide',fig.keep='all'}
+```{r echo=TRUE,message=FALSE,fig.keep='all'}
 set.seed(1111)
 
 # Fit classification tess as a model
 # <- trainControl(method="cv", number=5)
-trControl <- trainControl(method="cv", number=5)
+trControl <- trainControl(method="cv", number=5,allowParallel = TRUE)
 modFit <- train(classe ~ .,method="rpart",data=na.omit(TrainSet),trControl=trControl)
 
 # Print the classification tree
@@ -86,8 +93,8 @@ The accuracy of the Tree is `r accuracyTree` which is not very good. Our next st
 
 We will now fit the model on modelRandomF, and instruct the "train" function to use 3-fold cross-validation to select optimal tuning parameters for the model.
 
-```{r echo=TRUE,message=FALSE,results='hide',fig.keep='all'}
-rfControl <- trainControl(method="cv", number=3,verboseIter=F)
+```{r echo=TRUE,message=FALSE,fig.keep='all'}
+rfControl <- trainControl(method="cv", number=3,verboseIter=F,allowParallel = TRUE)
 
 modelRandomF <- train(classe~., data=na.omit(TrainSet), method="rf", trControl=rfControl)
 print(modelRandomF)
@@ -102,13 +109,13 @@ accuracyRandomF
 plot(modelRandomF)
 
 ```
-The accuracy of the random Forest is `r accuracyRandomF` which is great. Our next step will be trying to predict with the random forest model the Test data.
+The accuracy of the random Forest is `r accuracyRandomF` which is great. Our next step will be trying to predict with the random forest model the Test data. The sample error rate is 0.01.
 
 ## Conclusion
 
 Based on the accuracies above, the random forest model is the best one. We will now predict the values to use in the 20 questions test.
 
-```{r echo=TRUE,message=FALSE,results='hide',fig.keep='all',results='as-is' }
+```{r echo=TRUE,message=FALSE,fig.keep='all',results='as-is' }
 
 finalTest<-predict(modelRandomF,newdata=testClean)
 finalTest
