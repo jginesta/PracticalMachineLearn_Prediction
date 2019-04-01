@@ -2,7 +2,8 @@
 title: "Practical Machine Learning - Week 4"
 author: "Jessica Ginesta"
 date: "March 31, 2019"
-output: html_document
+output: rmarkdown::github_document
+
 ---
 
 # Synopsis: 
@@ -113,6 +114,4 @@ finalTest<-predict(modelRandomF,newdata=testClean)
 finalTest
 
 ```
-
-
 
